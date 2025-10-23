@@ -1,0 +1,887 @@
+{
+  "name": "report module  Innovista Web Form Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23,
+              "triggerAtMinute": 59
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        240
+      ],
+      "id": "6d6e3f67-6929-4bb8-b433-75a5311e8152",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Islamabad",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -432
+      ],
+      "id": "f06deb21-3741-475a-840f-068ec39cb5da",
+      "name": "Islamabad",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Islamabad",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Islamabad </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        -432
+      ],
+      "id": "b366e6ff-370f-4810-bf16-534db2e792bd",
+      "name": "Create a draft",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        -432
+      ],
+      "id": "71e2226e-e646-4b88-9462-a7af4f18b1d8",
+      "name": "Wait",
+      "webhookId": "8910875a-ff27-4ea2-890b-ab0ff8779f1c"
+    },
+    {
+      "parameters": {
+        "sendTo": "bilalhussain2010@yahoo.com",
+        "subject": "Web Form Daily  Report  for Review –Innovista All Chapters ",
+        "message": "=<p>Dear [Name],</p>\n\n<p>The daily feedback report has been prepared and saved in the draft folder.</p>\n\n<p>You are kindly requested to review the draft at your earliest convenience and provide any feedback or approval.</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        -432
+      ],
+      "id": "175e7276-e7c6-4c7f-aca3-d0c70f3e175d",
+      "name": "Send a message",
+      "webhookId": "99b4f699-a411-440c-9ce8-a0854cbc5e46",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Islamabad- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -432
+      ],
+      "id": "0b163c62-80b2-4059-98ba-e56078ef9b07",
+      "name": "Data Compilation"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Quetta",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Quetta </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        -240
+      ],
+      "id": "753544f2-d69e-4dea-9cba-f75e0c3c1956",
+      "name": "Create a draft1",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Quetta- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -240
+      ],
+      "id": "9e353be6-bb83-4970-831d-1caf310ae9f3",
+      "name": "Data Compilation1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 203117331,
+          "mode": "list",
+          "cachedResultName": "Quetta",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=203117331"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -240
+      ],
+      "id": "48e7dc5e-cc13-4635-9735-c1ae2f86d42d",
+      "name": "Quetta",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Lahore",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Lahore </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "4dd6dbd8-cefc-4dee-905c-50776f17bafa",
+      "name": "Create a draft2",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Lahore- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "1cebc021-a851-460c-9901-6324371de48d",
+      "name": "Data Compilation2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2142336119,
+          "mode": "list",
+          "cachedResultName": "Lahore",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=2142336119"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "cbe1425d-9a47-422b-9b42-44ea0cb14b20",
+      "name": "Lahore",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Karachi",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Karchi </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        144
+      ],
+      "id": "ade3139f-5550-4061-bbe6-bb25c3baadb8",
+      "name": "Create a draft3",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Karachi- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        144
+      ],
+      "id": "af408f6b-6d33-4919-950b-ef07ebe5ba21",
+      "name": "Data Compilation3"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Multan",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Quetta </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        336
+      ],
+      "id": "acb1ef8b-e7bb-4519-a81f-23d3dfcd4a1a",
+      "name": "Create a draft4",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Multan- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        336
+      ],
+      "id": "5a6f02d0-c8c7-445d-a395-37f0af419768",
+      "name": "Data Compilation4"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Gujranwala",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Gujranwala </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        528
+      ],
+      "id": "f0196fc5-90f1-4fa2-b4e1-ed6110770dde",
+      "name": "Create a draft5",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Gujranwala- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        528
+      ],
+      "id": "c075a1c3-1a9c-4eb4-a2c9-5fb54f9f630f",
+      "name": "Data Compilation5"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Bahawalpur",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Bahawalpur </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        720
+      ],
+      "id": "da5b5d3f-3b4c-4d32-be3b-07a37ba62007",
+      "name": "Create a draft6",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Bahawalpur- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        720
+      ],
+      "id": "6bb90e79-67e9-47ef-814a-02183fa6fd7d",
+      "name": "Data Compilation6"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1636642362,
+          "mode": "list",
+          "cachedResultName": "Karachi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=1636642362"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        144
+      ],
+      "id": "bbfad6fe-17a7-40a4-b31d-c252c7059293",
+      "name": "Karachi",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 927092135,
+          "mode": "list",
+          "cachedResultName": "Multan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=927092135"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        336
+      ],
+      "id": "74825aee-e095-4ad6-90b1-040e11f73c82",
+      "name": "Multan",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 202178935,
+          "mode": "list",
+          "cachedResultName": "Gujranwala",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=202178935"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        528
+      ],
+      "id": "82134a87-b1fb-46d9-adef-8814be6734af",
+      "name": "Gujranwala",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1884600267,
+          "mode": "list",
+          "cachedResultName": "Bahawalpur",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=1884600267"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        720
+      ],
+      "id": "c09ef9a5-02e0-4296-8b73-93e7f0a790cf",
+      "name": "Bahawalpur",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "Daily Form Submission Report -Innovista Peshawar",
+        "emailType": "html",
+        "message": "=<p>Dear Team </p>\n\n<p>Please find below the feedback form submissions received through Innovista Contact Us Form for Innovista Peshawar </p>\n\n{{ $json.body }}\n\n<p>You can also view the full log in Google Sheets here:<br>\n<a href=\"https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=sharing\">Open Google Sheet</a>\n</p>\n\n<p>Best regards,<br>\nTeam of 4 Automations</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        912
+      ],
+      "id": "e654c93a-237e-4962-895d-ae3b40a3cf17",
+      "name": "Create a draft7",
+      "webhookId": "b7504206-7d34-4cca-94ed-b0803797bdd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xwKXENFdTOfNmGc7",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Function node (JavaScript)\n// Input: items from Google Sheets (each item.json has Date, Time, Full-Name, etc.)\n\nconst rows = items.map(i => i.json || {});\n\n// map of short month -> number\nconst monthMap = {\n  Jan: \"01\", Feb: \"02\", Mar: \"03\", Apr: \"04\", May: \"05\", Jun: \"06\",\n  Jul: \"07\", Aug: \"08\", Sep: \"09\", Oct: \"10\", Nov: \"11\", Dec: \"12\"\n};\n\n// robust parser for common date formats like:\n// \"17 Sep 2025\", \"17 Sep, 2025\", \"Sep 17, 2025\"\nfunction parseDateParts(dateStr) {\n  if (!dateStr) return null;\n  const s = String(dateStr).trim().replace(/,/g, \"\");\n  const parts = s.split(/\\s+/);\n  if (parts.length === 3) {\n    const [a, b, c] = parts;\n    if (/^\\d{1,2}$/.test(a)) {           // \"17 Sep 2025\"\n      return { day: a, mon: b, year: c };\n    } else if (/^\\d{1,2}$/.test(b)) {    // \"Sep 17 2025\"\n      return { day: b, mon: a, year: c };\n    }\n  }\n  // fallback: let Date try (if server locale can parse)\n  const d = new Date(s);\n  if (!isNaN(d)) {\n    return {\n      day: String(d.getDate()),\n      mon: d.toLocaleString(\"en-US\", { month: \"short\" }),\n      year: String(d.getFullYear())\n    };\n  }\n  return null;\n}\n\n// attach iso date (YYYY-MM-DD) to each row (or null if unparseable)\nconst rowsWithIso = rows.map(r => {\n  const parsed = parseDateParts(r.Date);\n  if (!parsed) {\n    r.__isoDate = null;\n    r.__isoDateTime = null;\n    return r;\n  }\n  const monKey = parsed.mon.slice(0,3);\n  const monNum = monthMap[monKey] || \"01\";\n  const day = parsed.day.padStart(2, \"0\");\n  const isoDay = `${parsed.year}-${monNum}-${day}`; // YYYY-MM-DD\n  const time = (r.Time && String(r.Time).trim()) || \"00:00:00\";\n  r.__isoDate = isoDay;\n  r.__isoDateTime = `${isoDay}T${time}`;\n  return r;\n});\n\n// collect unique valid iso dates\nconst dates = [...new Set(rowsWithIso.map(r => r.__isoDate).filter(Boolean))];\n\nif (dates.length === 0) {\n  // nothing parsable -> return friendly message\n  return [{\n    json: {\n      subject: \"Daily Report - Latest Date\",\n      body: \"<h2>Daily Report</h2><p>No parsable dates found in the sheet.</p>\",\n      rows: []\n    }\n  }];\n}\n\n// latest date = max of YYYY-MM-DD strings (lexicographic works)\ndates.sort();\nconst latestDate = dates[dates.length - 1];\n\n// filter rows for that date\nconst latestRows = rowsWithIso.filter(r => r.__isoDate === latestDate);\n\n// build HTML table\nlet report = `<h2>Daily Report Innovista Peshawar- Entries for ${latestDate}</h2>`;\nif (latestRows.length === 0) {\n  report += \"<p>No entries for the latest date.</p>\";\n} else {\n  report += \"<table border='1' cellpadding='5' cellspacing='0'>\";\n  report += \"<tr><th>Date</th><th>Time</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Package</th><th>Chapter</th><th>Message</th></tr>\";\n  for (const r of latestRows) {\n    report += `<tr>\n      <td>${r.Date || \"\"}</td>\n      <td>${r.Time || \"\"}</td>\n      <td>${r[\"Full-Name\"] || \"\"}</td>\n      <td>${r[\"Email-Address\"] || \"\"}</td>\n      <td>${r[\"Phone-Number\"] || \"\"}</td>\n      <td>${r[\"Package-Interested\"] || \"\"}</td>\n      <td>${r[\"Select-Chapter\"] || \"\"}</td>\n      <td>${r[\"Message\"] || \"\"}</td>\n    </tr>`;\n  }\n  report += \"</table>\";\n}\n\n// return subject/body (for Email node) and raw rows if you want to do further processing\nreturn [{\n  json: {\n    subject: `Daily Report - ${latestDate}`,\n    body: report,\n    rows: latestRows\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        912
+      ],
+      "id": "7a9378b1-86cb-4724-81ae-7e151c9c14b1",
+      "name": "Data Compilation7"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14",
+          "mode": "list",
+          "cachedResultName": "Version 2 Innovista messages log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 903154781,
+          "mode": "list",
+          "cachedResultName": "Peshawar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_7bN4ijCyI3VbBl1dIJcGItL8aVVAQYDlBJwcmU4s14/edit#gid=903154781"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        912
+      ],
+      "id": "740c0fbc-0a4a-4c6c-aec4-3219c8573a24",
+      "name": "Peshawar",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bE3BwwHFH5eaIqMy",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Islamabad",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Quetta",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lahore",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Karachi",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Multan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gujranwala",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Bahawalpur",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Peshawar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Islamabad": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft1": {
+      "main": [
+        []
+      ]
+    },
+    "Data Compilation1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quetta": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation2": {
+      "main": [
+        [
+          {
+            "node": "Create a draft2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lahore": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation3": {
+      "main": [
+        [
+          {
+            "node": "Create a draft3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation4": {
+      "main": [
+        [
+          {
+            "node": "Create a draft4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation5": {
+      "main": [
+        [
+          {
+            "node": "Create a draft5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation6": {
+      "main": [
+        [
+          {
+            "node": "Create a draft6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Karachi": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Multan": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gujranwala": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bahawalpur": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Compilation7": {
+      "main": [
+        [
+          {
+            "node": "Create a draft7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Peshawar": {
+      "main": [
+        [
+          {
+            "node": "Data Compilation7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7ebaebb-30c1-4063-9353-03e070487741",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4fcf1977032560f488e5e512a83a3f0808fa7de8a03608a945571aac957e47b1"
+  },
+  "id": "Psk5h4jbAZvyluXy",
+  "tags": []
+}
